@@ -1,5 +1,0 @@
-{
-    "PATH_TO_REPLAY_FOLDER": "./replays/",
-    "NUMBER_OF_MATCHES": 2, 
-    "REQUEST_TIMEOUT_LIMIT": 60
-}
