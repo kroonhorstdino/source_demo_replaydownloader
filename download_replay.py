@@ -1,3 +1,4 @@
+import sys
 import urllib.request
 import requests
 import time
@@ -6,9 +7,17 @@ import bz2
 
 config = json.loads(open('./config.json').read()) #parameters stored in json file
 
-PATH_TO_REPLAY_FOLDER = config["PATH_TO_REPLAY_FOLDER"]
+#Number of matches to download beginning with the latest replay
+if len(sys.argv) >= 2:
+    NUMBER_OF_MATCHES = int(sys.argv[1])
+else:
+    NUMBER_OF_MATCHES = config["NUMBER_OF_MATCHES"]
 
-NUMBER_OF_MATCHES = config["NUMBER_OF_MATCHES"] #Number of matches to download beginning with the latest replay
+if False and len(sys.argv) >= 3: #TODO check path input method
+    PATH_TO_REPLAY_FOLDER = sys.argv[2]
+else:
+    PATH_TO_REPLAY_FOLDER = config["PATH_TO_REPLAY_FOLDER"]
+
 REQUEST_TIMEOUT_LIMIT = config["REQUEST_TIMEOUT_LIMIT"]
 
 ARE_MATCHIDS_DESCENDING = False
