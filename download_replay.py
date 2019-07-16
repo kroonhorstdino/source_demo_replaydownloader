@@ -13,10 +13,16 @@ if len(sys.argv) >= 2:
 else:
     NUMBER_OF_MATCHES = config["NUMBER_OF_MATCHES"]
 
-if False and len(sys.argv) >= 3: #TODO check path input method
-    PATH_TO_REPLAY_FOLDER = sys.argv[2]
+if len(sys.argv) >= 3:
+    LESS_THAN_MATCH_ID = sys.argv[2]
 else:
-    PATH_TO_REPLAY_FOLDER = config["PATH_TO_REPLAY_FOLDER"]
+    LESS_THAN_MATCH_ID = None
+
+'''
+if len(sys.argv) >= 3: #TODO check path input method
+    PATH_TO_REPLAY_FOLDER = sys.argv[2]
+else:'''
+PATH_TO_REPLAY_FOLDER = config["PATH_TO_REPLAY_FOLDER"]
 
 REQUEST_TIMEOUT_LIMIT = config["REQUEST_TIMEOUT_LIMIT"]
 
@@ -36,14 +42,12 @@ def http_request_matches(less_than_match_id=None):  #Get data about matches from
     return http_response
 
 #Get match IDs of last professional Dota2 matches
-def fetch_match_ids(numberOfMatches):
+def fetch_match_ids(numberOfMatches,last_match_id=None):
     iterations = max(1, numberOfMatches // 100)  # Get integer instead of float
 
     print('Getting ' + str(iterations) + ' responses with data about 100 pro matches each')
 
-    last_match_id = None  #First request for latest matches
-    match_id_list = []  #List of all match ids
-    
+    match_id_list = []  #List of all match ids 
 
     for i in range(0, iterations):  #Collect 100 matches iteration times
         print("Fetch data for response " + str(i+1))
@@ -68,6 +72,8 @@ def fetch_match_ids(numberOfMatches):
 
 # Collect data about replays from OpenDota to construct URL
 def construct_replay_urls(match_id_list):
+
+    print("Constructing replay URLs")
 
     REPLAY_API_ENDPOINT = 'https://api.opendota.com/api/replays'
 
@@ -125,10 +131,14 @@ def download_replays(replay_url_list):
         replay_url = replay_url_list[replay_index]
         replay_file_name = '.'.join((replay_url.split('/')[-1]).split('.')[0:2]) #From http://.../570/15453434_001212.dem.bz2 to 15453434_001212.dem
 
-        print("Downloading replay [{replay_index}] | {replay}".format(replay_index=str(replay_index), replay=replay_file_name))
+        print("Downloading replay [{replay_index}] | {replay}".format(replay_index=str(replay_index), replay=replay_url))
         #urllib.request.urlretrieve(replay_url, PATH_TO_REPLAY_FOLDER + replay_file_name)
 
-        replay_data = urllib.request.urlopen(replay_url)        
+        try:
+            replay_data = urllib.request.urlopen(replay_url)
+        except:
+            print("Failed to download {replay}. Continue with next one.".format(replay=replay_url))
+            continue
 
         CHUNK = 16 * 1024
 
@@ -146,7 +156,8 @@ def download_replays(replay_url_list):
 
 ### CODE EXECUTION
 
-match_id_list = fetch_match_ids(NUMBER_OF_MATCHES)
+
+match_id_list = fetch_match_ids(NUMBER_OF_MATCHES, LESS_THAN_MATCH_ID)
 
 if match_id_list == 0:
     print("Match ID requisition failed! Abort...")
